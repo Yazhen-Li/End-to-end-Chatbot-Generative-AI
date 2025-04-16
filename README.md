@@ -14,7 +14,7 @@ An end-to-end chatbot project based on generative AI, utilizing the latest LangC
 
 1. Clone the repository
 ```bash
-git clone https://github.com/yourusername/End-to-end-Chatbot-Generative-AI.git
+git clone https://github.com/Yazhen-Li/End-to-end-Chatbot-Generative-AI.git
 cd End-to-end-Chatbot-Generative-AI
 ```
 
