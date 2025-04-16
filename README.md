@@ -2,6 +2,9 @@
 
 An end-to-end chatbot project based on generative AI, utilizing the latest LangChain framework and vector database technology.
 
+Based on the documents you uploaded, the system will build a personalized AI knowledge base for you. The AI assistant will provide accurate answers to your questions by leveraging the content from your uploaded files.
+
+
 ## Features
 
 - Conversation management based on LangChain framework
