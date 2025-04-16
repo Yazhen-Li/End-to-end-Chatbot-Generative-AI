@@ -1,0 +1,134 @@
+<link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>AI Chat Assistant</title>
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css')}}"/>
+	</head>
+	
+	
+	<body>
+		<div class="container-fluid h-100">
+			<div class="row justify-content-center h-100">		
+				<div class="col-md-8 col-xl-6 chat">
+					<div class="upload-container">
+						<form id="uploadForm" enctype="multipart/form-data">
+							<div class="custom-file-upload">
+								<input type="file" id="fileInput" name="file" class="form-control" required>
+								<label for="fileInput">
+									<i class="fas fa-cloud-upload-alt"></i>
+									<span>Choose a file</span>
+								</label>
+								<button type="submit" class="upload-btn">
+									<i class="fas fa-upload"></i> Upload
+								</button>
+							</div>
+						</form>
+						<div id="uploadStatus" class="upload-status"></div>
+					</div>
+					
+					<div class="card">
+						<div class="card-header msg_head">	
+							<div class="d-flex bd-highlight">
+								<div class="img_cont">
+									<img src="{{ url_for('static', filename='robot_icon') }}" class="rounded-circle user_img">
+									<span class="online_icon"></span>
+								</div>
+								<div class="user_info">
+									<span>Chat Assistant</span>
+									<p>AI powered assistant</p>
+								</div>
+							</div>
+						</div>
+						<div id="messageFormeight" class="card-body msg_card_body">
+							
+							
+						</div>
+						<div class="card-footer">
+							<form id="messageArea" class="input-group">
+                                <input type="text" id="text" name="msg" placeholder="Type your message..." autocomplete="off" class="form-control type_msg" required/>
+								<div class="input-group-append">
+									<button type="submit" id="send" class="input-group-text send_btn">
+										<i class="fas fa-paper-plane"></i>
+									</button>
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<script>
+			$(document).ready(function() {
+				// 显示选中的文件名
+				$("#fileInput").on("change", function() {
+					var fileName = $(this).val().split("\\").pop();
+					$(this).siblings("label").find("span").text(fileName || "Choose a file");
+				});
+
+				// Store the bot icon URL
+				var botIconUrl = "{{ url_for('static', filename='robot_icon') }}";
+				
+				$("#messageArea").on("submit", function(event) {
+					const date = new Date();
+					const hour = date.getHours();
+					const minute = date.getMinutes().toString().padStart(2, '0');
+					const str_time = hour+":"+minute;
+					var rawText = $("#text").val();
+
+					var userHtml = '<div class="d-flex justify-content-end mb-4"><div class="msg_cotainer_send">' + rawText + '<span class="msg_time_send">'+ str_time + '</span></div><div class="img_cont_msg"><img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg"></div></div>';
+					
+					$("#text").val("");
+					$("#messageFormeight").append(userHtml);
+					$("#messageFormeight").scrollTop($("#messageFormeight")[0].scrollHeight);
+
+					$.ajax({
+						data: {
+							msg: rawText,	
+						},
+						type: "POST",
+						url: "/get",
+					}).done(function(data) {
+						var botHtml = '<div class="d-flex justify-content-start mb-4"><div class="img_cont_msg"><img src="' + botIconUrl + '" class="rounded-circle user_img_msg"></div><div class="msg_cotainer">' + data + '<span class="msg_time">' + str_time + '</span></div></div>';
+						$("#messageFormeight").append($.parseHTML(botHtml));
+						$("#messageFormeight").scrollTop($("#messageFormeight")[0].scrollHeight);
+					});
+					event.preventDefault();
+				});
+
+				$("#uploadForm").on("submit", function(event) {
+					event.preventDefault();
+					
+					var formData = new FormData(this);
+					$("#uploadStatus").html('<div class="loading"><div class="spinner"></div><span>Uploading...</span></div>');
+
+					$.ajax({
+						url: "/upload",
+						type: "POST",
+						data: formData,
+						contentType: false,
+						processData: false,
+						success: function(response) {
+							$("#uploadStatus").html('<div class="success"><i class="fas fa-check-circle"></i><span>' + response.message + '</span></div>');
+							setTimeout(function() {
+								$("#uploadStatus").fadeOut();
+							}, 5000);
+						},
+						error: function(jqXHR) {
+							var errorMessage = jqXHR.responseJSON ? jqXHR.responseJSON.error : "Upload failed";
+							$("#uploadStatus").html('<div class="error"><i class="fas fa-times-circle"></i><span>' + errorMessage + '</span></div>');
+						}
+					});
+				});
+			});
+		</script>
+        
+    </body>
+</html>
